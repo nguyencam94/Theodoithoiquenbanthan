@@ -1,0 +1,48 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Stores user-specific settings and profile information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The unique ID of the user." },
+        "email": { "type": "string", "description": "The user's email address." },
+        "displayName": { "type": "string", "description": "The user's display name." },
+        "photoURL": { "type": "string", "description": "The user's profile picture URL." },
+        "role": { "type": "string", "enum": ["user", "admin"], "description": "The user's role." },
+        "categories": { "type": "array", "items": { "type": "string" }, "description": "Custom categories for the user." },
+        "categoryIcons": { "type": "object", "description": "Mapping of category names to icon names." },
+        "categoryColors": { "type": "object", "description": "Mapping of category names to color classes." }
+      },
+      "required": ["uid", "email"]
+    },
+    "Habit": {
+      "title": "Habit",
+      "description": "A habit tracked by the user.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string", "description": "The ID of the user who owns this habit." },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "iconName": { "type": "string", "description": "The name of the icon to display." },
+        "completedDays": { "type": "array", "items": { "type": "string" } },
+        "logs": { "type": "object", "description": "Daily logs for the habit." },
+        "color": { "type": "string" },
+        "targetCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "name", "category"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile documents."
+    },
+    "/users/{userId}/habits/{habitId}": {
+      "schema": "Habit",
+      "description": "Habits belonging to a specific user."
+    }
+  }
+}
