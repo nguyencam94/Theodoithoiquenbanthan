@@ -39,6 +39,8 @@ import {
   ArrowRight,
   AlertTriangle
 } from 'lucide-react';
+import { PWAInstallButton } from './components/PWAInstallButton';
+import { OfflineIndicator } from './components/OfflineIndicator';
 import { auth, db, loginWithGoogle, loginWithFacebook, logout, handleFirestoreError, OperationType } from './firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc, getDoc, writeBatch } from 'firebase/firestore';
@@ -1481,7 +1483,23 @@ export default function App() {
       {currentView === 'home' ? (
         <>
           {/* Header */}
-          <header className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 pt-6 pb-3 sticky top-0 z-30 shadow-sm border-b border-slate-100 dark:border-slate-800">
+          <header className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 pt-4 pb-3 sticky top-0 z-30 shadow-sm border-b border-slate-100 dark:border-slate-800">
+            {/* Top Brand & Quick Actions */}
+            <div className="flex items-center justify-between mb-3.5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white flex items-center justify-center shadow-md shadow-indigo-200 dark:shadow-none">
+                  <Check className="w-4 h-4 stroke-[2.5]" />
+                </div>
+                <div>
+                  <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-none">HabitFlow</h1>
+                  <p className="text-[10px] text-slate-400 font-semibold leading-tight">Theo dõi thói quen</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <PWAInstallButton variant="compact" />
+              </div>
+            </div>
+
             {/* Day Selector */}
             <div className="flex justify-between items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
               {weekDays.map((date, idx) => {
@@ -1762,6 +1780,8 @@ export default function App() {
           </header>
 
           <div className="px-6 mt-8 space-y-6">
+            <PWAInstallButton variant="settings" />
+
             <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-md rounded-3xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -2472,6 +2492,9 @@ export default function App() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Network Connectivity Indicator for PWA */}
+      <OfflineIndicator />
     </div>
   );
 }

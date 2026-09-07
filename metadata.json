@@ -1,5 +1,8 @@
 {
   "name": "HabitFlow",
-  "description": "A clean and intuitive daily habit tracker to help you build better routines.",
-  "requestFramePermissions": []
+  "description": "Ứng dụng theo dõi thói quen hàng ngày khoa học, trực quan và hiệu quả.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

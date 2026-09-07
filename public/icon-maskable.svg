@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="flowGradMaskable" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4338ca" />
+      <stop offset="50%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+    <linearGradient id="checkGradMaskable" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#e0e7ff" />
+    </linearGradient>
+  </defs>
+
+  <!-- Full-bleed background for maskable standard -->
+  <rect x="0" y="0" width="512" height="512" fill="url(#flowGradMaskable)" />
+
+  <!-- Inner glowing ring / habit streak track in safe zone -->
+  <circle cx="256" cy="256" r="120" fill="none" stroke="#ffffff" stroke-opacity="0.22" stroke-width="24" stroke-linecap="round" />
+  <circle cx="256" cy="256" r="120" fill="none" stroke="#ffffff" stroke-width="24" stroke-linecap="round" stroke-dasharray="754" stroke-dashoffset="190" />
+
+  <!-- Flowing bold checkmark in safe zone -->
+  <path d="M204 262 L238 296 L312 214" fill="none" stroke="url(#checkGradMaskable)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Sparkling success star in safe zone -->
+  <circle cx="328" cy="176" r="13" fill="#fbbf24" />
+</svg>
