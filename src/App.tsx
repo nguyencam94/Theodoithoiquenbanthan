@@ -36,7 +36,8 @@ import {
   CheckCircle2,
   Activity,
   Clock,
-  ArrowRight
+  ArrowRight,
+  AlertTriangle
 } from 'lucide-react';
 import { auth, db, loginWithGoogle, loginWithFacebook, logout, handleFirestoreError, OperationType } from './firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -189,14 +190,15 @@ const getInitialHabits = (): Habit[] => [];
 const ProgressCircle = ({ current, target, size = 32 }: { current: number, target: number, size?: number }) => {
   const radius = (size - 4) / 2;
   const circumference = 2 * Math.PI * radius;
-  const progress = Math.min(current / target, 1);
+  const progress = Math.min(Math.max(current / target, 0), 1);
   const offset = circumference - progress * circumference;
+  const isDone = current >= target;
 
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
       <svg className="transform -rotate-90" width={size} height={size}>
         <circle
-          className="text-slate-100"
+          className="text-slate-100 dark:text-slate-700"
           strokeWidth="3"
           stroke="currentColor"
           fill="transparent"
@@ -205,7 +207,7 @@ const ProgressCircle = ({ current, target, size = 32 }: { current: number, targe
           cy={size / 2}
         />
         <circle
-          className="text-indigo-600 transition-all duration-500 ease-out"
+          className={`${isDone ? 'text-emerald-500' : 'text-indigo-600'} transition-all duration-500 ease-out`}
           strokeWidth="3"
           strokeDasharray={`${circumference}`}
           strokeDashoffset={`${offset}`}
@@ -218,10 +220,10 @@ const ProgressCircle = ({ current, target, size = 32 }: { current: number, targe
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        {current >= target ? (
-          <Check className="w-4 h-4 text-indigo-600" />
+        {isDone ? (
+          <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 stroke-[3]" />
         ) : (
-          <span className="text-[10px] font-bold text-slate-600">{current}</span>
+          <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">{current}</span>
         )}
       </div>
     </div>
@@ -1168,6 +1170,7 @@ export default function App() {
   const [isEditing, setIsEditing] = useState(false);
   const [habitToEdit, setHabitToEdit] = useState<Habit | null>(null);
   const [selectedHabitForDetail, setSelectedHabitForDetail] = useState<Habit | null>(null);
+  const [habitToDelete, setHabitToDelete] = useState<Habit | null>(null);
   const [is21DaysModalOpen, setIs21DaysModalOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [categoryToEdit, setCategoryToEdit] = useState<string | null>(null);
@@ -1356,6 +1359,20 @@ export default function App() {
     } else {
       setHabits(habits.filter(h => h.id !== id));
     }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!habitToDelete) return;
+    const habitId = habitToDelete.id;
+    setHabitToDelete(null);
+    if (selectedHabitForDetail?.id === habitId) {
+      setSelectedHabitForDetail(null);
+    }
+    if (habitToEdit?.id === habitId) {
+      setIsEditing(false);
+      setHabitToEdit(null);
+    }
+    await deleteHabit(habitId);
   };
 
   const updateHabitLog = async (habitId: string, date: string, updates: Partial<HabitLog>) => {
@@ -1584,7 +1601,7 @@ export default function App() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors text-sm font-black ${
-                              isCompleted ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                              isCompleted ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-100 dark:shadow-none' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                             }`}>
                               {index + 1}
                             </div>
@@ -1609,62 +1626,90 @@ export default function App() {
                             </div>
                           </div>
                           
-                          <div className="flex items-center gap-1">
-                            {habit.targetCount > 1 && (
-                              <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  updateHabitCount(habit.id, selectedDate, -1);
-                                }}
-                                className="p-2 text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-colors bg-slate-100/50 dark:bg-slate-800/50 rounded-lg md:bg-transparent md:dark:bg-transparent md:opacity-0 md:group-hover:opacity-100"
-                                title="Giảm"
-                              >
-                                <Minus className="w-4 h-4" />
-                              </button>
-                            )}
+                          <div className="flex items-center gap-1.5">
                             <button 
                               onClick={(e) => {
                                 e.stopPropagation();
                                 startEditing(habit);
                               }}
-                              className="p-2 text-indigo-600 dark:text-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 rounded-xl md:opacity-0 md:group-hover:opacity-100 transition-all"
+                              className="p-1.5 text-indigo-600 dark:text-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 rounded-xl md:opacity-0 md:group-hover:opacity-100 transition-all"
                               title="Chỉnh sửa"
                             >
-                              <Pencil className="w-4 h-4" strokeWidth={1.5} />
+                              <Pencil className="w-3.5 h-3.5" strokeWidth={1.5} />
                             </button>
                             <button 
                               onClick={(e) => {
                                 e.stopPropagation();
-                                deleteHabit(habit.id);
+                                setHabitToDelete(habit);
                               }}
-                              className="p-2 text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-xl md:opacity-0 md:group-hover:opacity-100 transition-all"
-                              title="Xóa"
+                              className="p-1.5 text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-xl md:opacity-0 md:group-hover:opacity-100 transition-all"
+                              title="Xóa thói quen"
                             >
-                              <Trash2 className="w-4 h-4" strokeWidth={1.5} />
+                              <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
                             </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleHabit(habit.id);
-                              }}
-                              className="transition-all ml-1"
-                            >
-                              {habit.targetCount > 1 ? (
-                                <ProgressCircle 
-                                  current={habit.logs[selectedDate]?.count || 0} 
-                                  target={habit.targetCount} 
-                                  size={32}
-                                />
-                              ) : (
-                                <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all border-2 ${
-                                  isCompleted 
-                                    ? 'bg-indigo-600 border-indigo-600 text-white' 
-                                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-transparent hover:border-indigo-400'
+
+                            {habit.targetCount > 1 ? (
+                              <div className="flex items-center gap-1 ml-1 bg-slate-50 dark:bg-slate-800/80 p-1 rounded-2xl border border-slate-100 dark:border-slate-700/60">
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateHabitCount(habit.id, selectedDate, -1);
+                                  }}
+                                  disabled={(habit.logs[selectedDate]?.count || 0) <= 0}
+                                  className={`w-7 h-7 rounded-xl flex items-center justify-center transition-all ${
+                                    (habit.logs[selectedDate]?.count || 0) > 0
+                                      ? 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 active:scale-90 shadow-sm'
+                                      : 'opacity-25 cursor-not-allowed text-slate-400 dark:text-slate-600'
+                                  }`}
+                                  title="Giảm 1 lần"
+                                >
+                                  <Minus className="w-3.5 h-3.5 stroke-[2.5]" />
+                                </button>
+                                
+                                <div className={`px-2 py-0.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                                  isCompleted
+                                    ? 'text-emerald-600 dark:text-emerald-400 font-extrabold'
+                                    : 'text-slate-700 dark:text-slate-300 font-semibold'
                                 }`}>
-                                  <Check className="w-4 h-4" />
+                                  {isCompleted && <Check className="w-3.5 h-3.5 stroke-[3] text-emerald-600 dark:text-emerald-400" />}
+                                  <span>{habit.logs[selectedDate]?.count || 0}/{habit.targetCount}</span>
                                 </div>
-                              )}
-                            </button>
+
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateHabitCount(habit.id, selectedDate, 1);
+                                  }}
+                                  className={`w-7 h-7 rounded-xl flex items-center justify-center transition-all active:scale-90 shadow-sm ${
+                                    isCompleted
+                                      ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-100 dark:shadow-none'
+                                      : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100 dark:shadow-none'
+                                  }`}
+                                  title="Thêm 1 lần (+1)"
+                                >
+                                  <Plus className="w-4 h-4 stroke-[3]" />
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleHabit(habit.id);
+                                }}
+                                className="transition-all ml-1 active:scale-90"
+                                title={isCompleted ? "Đã hoàn thành (Nhấn để hủy)" : "Nhấn để đánh dấu hoàn thành"}
+                              >
+                                {isCompleted ? (
+                                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white border border-emerald-500 shadow-sm shadow-emerald-200 dark:shadow-none transition-all">
+                                    <Check className="w-5 h-5 stroke-[3]" />
+                                  </div>
+                                ) : (
+                                  <div className="w-8 h-8 rounded-xl flex items-center justify-center border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-300 dark:text-slate-600 hover:border-emerald-500 hover:text-emerald-500 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 transition-all">
+                                    <Check className="w-4 h-4 stroke-[2]" />
+                                  </div>
+                                )}
+                              </button>
+                            )}
                           </div>
                         </div>
                       </motion.div>
@@ -1808,7 +1853,7 @@ export default function App() {
       </div>
 
       {/* Floating Action Button - Centered */}
-      {!isAdding && !isEditing && !selectedHabitForDetail && !isAddingCategory && !is21DaysModalOpen && (
+      {!isAdding && !isEditing && !selectedHabitForDetail && !isAddingCategory && !is21DaysModalOpen && !habitToDelete && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
           <button 
             onClick={() => setIsAdding(true)}
@@ -2027,6 +2072,18 @@ export default function App() {
                 <div className="flex gap-3">
                   <button
                     type="button"
+                    onClick={() => {
+                      if (habitToEdit) {
+                        setHabitToDelete(habitToEdit);
+                      }
+                    }}
+                    className="p-3 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-all active:scale-[0.98]"
+                    title="Xóa thói quen này"
+                  >
+                    <Trash2 className="w-5 h-5 stroke-[1.5]" />
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setIsEditing(false)}
                     className="flex-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl py-3 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition-all"
                   >
@@ -2201,15 +2258,59 @@ export default function App() {
                       </div>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => setSelectedHabitForDetail(null)}
-                    className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button 
+                      onClick={() => {
+                        setHabitToDelete(selectedHabitForDetail);
+                      }}
+                      className="p-1.5 bg-rose-50 dark:bg-rose-950/40 rounded-full text-rose-500 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-all"
+                      title="Xóa thói quen này"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => setSelectedHabitForDetail(null)}
+                      className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-6">
+                  {/* Single Habit Completion Status */}
+                  {selectedHabitForDetail.targetCount === 1 && (
+                    <div className="bg-slate-50 dark:bg-slate-800/80 rounded-2xl p-4 border border-slate-100 dark:border-slate-700/60 flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-3.5 h-3.5 text-emerald-500 stroke-[3]" />
+                          <h3 className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Trạng thái hoàn thành</h3>
+                        </div>
+                        <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 mt-1">
+                          {habits.find(h => h.id === selectedHabitForDetail.id)?.completedDays.includes(selectedDate)
+                            ? 'Đã hoàn thành hôm nay'
+                            : 'Chưa hoàn thành hôm nay'}
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => toggleHabit(selectedHabitForDetail.id)}
+                        className="transition-all active:scale-90"
+                        title={habits.find(h => h.id === selectedHabitForDetail.id)?.completedDays.includes(selectedDate) ? "Đã hoàn thành (Nhấn để hủy)" : "Nhấn để đánh dấu hoàn thành"}
+                      >
+                        {habits.find(h => h.id === selectedHabitForDetail.id)?.completedDays.includes(selectedDate) ? (
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-500 text-white border border-emerald-500 shadow-sm shadow-emerald-200 dark:shadow-none">
+                            <Check className="w-6 h-6 stroke-[3]" />
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-300 dark:text-slate-600 hover:border-emerald-500 hover:text-emerald-500">
+                            <Check className="w-5 h-5 stroke-[2]" />
+                          </div>
+                        )}
+                      </button>
+                    </div>
+                  )}
+
                   {/* Count Section */}
                   {selectedHabitForDetail.targetCount > 1 && (
                     <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl p-4 border border-indigo-100 dark:border-indigo-900/30">
@@ -2313,6 +2414,62 @@ export default function App() {
               </div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Habit Confirmation Dialog */}
+      <AnimatePresence>
+        {habitToDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setHabitToDelete(null)}
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 16 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+              className="relative w-full max-w-sm bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-2xl border border-slate-100 dark:border-slate-700/80 z-10 text-center"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto mb-4 border border-rose-100 dark:border-rose-900/40 shadow-sm">
+                <AlertTriangle className="w-7 h-7 stroke-[2]" />
+              </div>
+
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                Xóa thói quen này?
+              </h3>
+
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
+                Bạn có chắc chắn muốn xóa thói quen{' '}
+                <span className="font-bold text-slate-900 dark:text-white underline decoration-rose-400 decoration-2 underline-offset-2">
+                  "{habitToDelete.name}"
+                </span>
+                ? Toàn bộ dữ liệu ghi nhận và lịch sử tiến độ sẽ bị xóa và không thể khôi phục.
+              </p>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setHabitToDelete(null)}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all active:scale-[0.98]"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-sm bg-rose-600 hover:bg-rose-700 text-white transition-all shadow-md shadow-rose-200 dark:shadow-none flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                >
+                  <Trash2 className="w-4 h-4 stroke-[2]" />
+                  <span>Xóa</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
