@@ -422,7 +422,7 @@ const Habit21DaysModal = ({ habit, categoryColors, categoryIcons, onClose }: Hab
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-extrabold text-base text-slate-900 dark:text-white leading-tight">
+                  <h3 className="font-medium text-base text-slate-800 dark:text-slate-100 leading-tight">
                     {habit.name}
                   </h3>
                   <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[8.5px] font-bold uppercase border ${categoryColors[habit.category] || 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'}`}>
@@ -682,14 +682,14 @@ const StatsPage = ({
               <Award className="w-4 h-4 text-amber-500 dark:text-amber-400" />
             </div>
             <p className="text-slate-400 dark:text-slate-500 text-[9px] font-bold uppercase tracking-wider mb-0.5">Tốt nhất</p>
-            <h3 className="text-sm font-black text-slate-900 dark:text-white truncate">{bestHabit?.name || '---'}</h3>
+            <h3 className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">{bestHabit?.name || '---'}</h3>
           </div>
         </div>
 
         {/* Habit Grids */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Chi tiết thói quen</h3>
+            <h3 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Chi tiết thói quen</h3>
             <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-900/40">
               Nhấn thẻ để xem phân tích 21 ngày ✨
             </span>
@@ -707,7 +707,7 @@ const StatsPage = ({
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    <h4 className="text-sm font-medium text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                       {habit.name}
                     </h4>
                     <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all" />
@@ -1589,8 +1589,8 @@ export default function App() {
                               {index + 1}
                             </div>
                             <div>
-                              <h4 className={`text-sm font-bold transition-all ${
-                                isCompleted ? 'text-slate-400 dark:text-slate-500 line-through' : 'text-slate-900 dark:text-white'
+                              <h4 className={`text-sm font-medium transition-all ${
+                                isCompleted ? 'text-slate-400 dark:text-slate-500 line-through' : 'text-slate-800 dark:text-slate-100'
                               }`}>
                                 {habit.name}
                               </h4>
@@ -2194,7 +2194,7 @@ export default function App() {
                         : 1}
                     </div>
                     <div>
-                      <h2 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">{selectedHabitForDetail.name}</h2>
+                      <h2 className="text-base font-medium text-slate-800 dark:text-slate-100 leading-tight">{selectedHabitForDetail.name}</h2>
                       <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[8.5px] font-bold uppercase mt-1 border ${categoryColors[selectedHabitForDetail.category] || 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-600'}`}>
                         {categoryIcons[selectedHabitForDetail.category] || <Sun className="w-3 h-3" />}
                         {selectedHabitForDetail.category}
